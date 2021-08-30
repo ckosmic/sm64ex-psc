@@ -192,13 +192,14 @@ static void controller_sdl_read(OSContPad *pad) {
                     sdl_haptic = controller_sdl_init_haptics(i);
                     break;
                 }
-            }/* else {
+            }
+			 else {
 				sdl_jstck = SDL_JoystickOpen(i);
                 if (sdl_jstck != NULL) {
 					isPSCGamepad = (strstr(SDL_JoystickNameForIndex(i), "Sony Interactive Entertainment Controller") != NULL);
                     break;
                 }
-			}*/
+			}
         }
         if (sdl_cntrl == NULL && sdl_jstck == NULL) {
 			printf("Controller not found\n");

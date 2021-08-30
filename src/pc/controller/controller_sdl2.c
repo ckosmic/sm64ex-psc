@@ -38,6 +38,7 @@ extern u8 newcam_mouse;
 static bool init_ok;
 static bool haptics_enabled;
 static SDL_GameController *sdl_cntrl;
+static SDL_Joystick *sdl_jstck;
 static SDL_Haptic *sdl_haptic;
 
 static u32 num_joy_binds = 0;
@@ -176,8 +177,14 @@ static void controller_sdl_read(OSContPad *pad) {
         sdl_cntrl = NULL;
         sdl_haptic = NULL;
     }
+	if (sdl_jstck != NULL && !SDL_JoystickGetAttached(sdl_jstck)) {
+        SDL_JoystickClose(sdl_jstck);
+        sdl_jstck = NULL;
+    }
 
-    if (sdl_cntrl == NULL) {
+	bool isPSCGamepad = false;
+
+    if (sdl_cntrl == NULL || sdl_jstck == NULL) {
         for (int i = 0; i < SDL_NumJoysticks(); i++) {
             if (SDL_IsGameController(i)) {
                 sdl_cntrl = SDL_GameControllerOpen(i);
@@ -185,9 +192,16 @@ static void controller_sdl_read(OSContPad *pad) {
                     sdl_haptic = controller_sdl_init_haptics(i);
                     break;
                 }
-            }
+            } else {
+				sdl_jstck = SDL_JoystickOpen(i);
+                if (sdl_jstck != NULL) {
+					isPSCGamepad = (strstr(SDL_JoystickNameForIndex(i), "Sony Interactive Entertainment Controller") != NULL);
+                    break;
+                }
+			}
         }
-        if (sdl_cntrl == NULL) {
+        if (sdl_cntrl == NULL && sdl_jstck == NULL) {
+			printf("Controller not found\n");
             return;
         }
     }
@@ -214,52 +228,104 @@ static void controller_sdl_read(OSContPad *pad) {
     }
 #endif
 
-    for (u32 i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
-        const bool new = SDL_GameControllerGetButton(sdl_cntrl, i);
-        update_button(i, new);
-    }
+	if(isPSCGamepad) {
+		for (int i = 0; i < SDL_JoystickNumButtons(sdl_jstck); ++i) {
+			const bool state = SDL_JoystickGetButton(sdl_jstck, i);
+			if(state != 0) {
+				switch(i) {
+					case 0: // Triangle
+						pad->button |= U_CBUTTONS;
+						break;
+					case 3: // Square
+						pad->button |= B_BUTTON;
+						break;
+					case 2: // X
+						pad->button |= A_BUTTON;
+						break;
+					case 1: // Circle
+						pad->button |= D_CBUTTONS;
+						break;
+					case 9: // Start
+						pad->button |= START_BUTTON;
+						break;
+					case 8: // Select
+						pad->button |= R_TRIG;
+						break;
+					case 6: // L1
+						pad->button |= L_TRIG;
+						break;
+					case 4: // L2
+						pad->button |= L_CBUTTONS;
+						break;
+					case 7: // R1
+						pad->button |= Z_TRIG;
+						break;
+					case 5: // R2
+						pad->button |= R_CBUTTONS;
+						break;
+				}
+			}
+		}
+		
+		// D-pad, detected as an axis
+		const int16_t pad_x = SDL_JoystickGetAxis(sdl_jstck, 0);
+		const int16_t pad_y = SDL_JoystickGetAxis(sdl_jstck, 1);
+		if(pad_y > 0x4000)
+			pad->stick_y = -128;
+		if(pad_x < -0x4000)
+			pad->stick_x = -128;
+		if(pad_y < -0x4000)
+			pad->stick_y = 127;
+		if(pad_x > 0x4000)
+			pad->stick_x = 127;
+	} else {
+		for (u32 i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
+			const bool new = SDL_GameControllerGetButton(sdl_cntrl, i);
+			update_button(i, new);
+		}
+		
+		update_button(VK_LTRIGGER - VK_BASE_SDL_GAMEPAD, ltrig > AXIS_THRESHOLD);
+		update_button(VK_RTRIGGER - VK_BASE_SDL_GAMEPAD, rtrig > AXIS_THRESHOLD);
 
-    update_button(VK_LTRIGGER - VK_BASE_SDL_GAMEPAD, ltrig > AXIS_THRESHOLD);
-    update_button(VK_RTRIGGER - VK_BASE_SDL_GAMEPAD, rtrig > AXIS_THRESHOLD);
+		u32 buttons_down = 0;
+		for (u32 i = 0; i < num_joy_binds; ++i)
+			if (joy_buttons[joy_binds[i][0]])
+				buttons_down |= joy_binds[i][1];
 
-    u32 buttons_down = 0;
-    for (u32 i = 0; i < num_joy_binds; ++i)
-        if (joy_buttons[joy_binds[i][0]])
-            buttons_down |= joy_binds[i][1];
+		pad->button |= buttons_down;
 
-    pad->button |= buttons_down;
+		const u32 xstick = buttons_down & STICK_XMASK;
+		const u32 ystick = buttons_down & STICK_YMASK;
+		if (xstick == STICK_LEFT)
+			pad->stick_x = -128;
+		else if (xstick == STICK_RIGHT)
+			pad->stick_x = 127;
+		if (ystick == STICK_DOWN)
+			pad->stick_y = -128;
+		else if (ystick == STICK_UP)
+			pad->stick_y = 127;
 
-    const u32 xstick = buttons_down & STICK_XMASK;
-    const u32 ystick = buttons_down & STICK_YMASK;
-    if (xstick == STICK_LEFT)
-        pad->stick_x = -128;
-    else if (xstick == STICK_RIGHT)
-        pad->stick_x = 127;
-    if (ystick == STICK_DOWN)
-        pad->stick_y = -128;
-    else if (ystick == STICK_UP)
-        pad->stick_y = 127;
+		if (rightx < -0x4000) pad->button |= L_CBUTTONS;
+		if (rightx > 0x4000) pad->button |= R_CBUTTONS;
+		if (righty < -0x4000) pad->button |= U_CBUTTONS;
+		if (righty > 0x4000) pad->button |= D_CBUTTONS;
 
-    if (rightx < -0x4000) pad->button |= L_CBUTTONS;
-    if (rightx > 0x4000) pad->button |= R_CBUTTONS;
-    if (righty < -0x4000) pad->button |= U_CBUTTONS;
-    if (righty > 0x4000) pad->button |= D_CBUTTONS;
+		uint32_t magnitude_sq = (uint32_t)(leftx * leftx) + (uint32_t)(lefty * lefty);
+		uint32_t stickDeadzoneActual = configStickDeadzone * DEADZONE_STEP;
+		if (magnitude_sq > (uint32_t)(stickDeadzoneActual * stickDeadzoneActual)) {
+			pad->stick_x = leftx / 0x100;
+			int stick_y = -lefty / 0x100;
+			pad->stick_y = stick_y == 128 ? 127 : stick_y;
+		}
 
-    uint32_t magnitude_sq = (uint32_t)(leftx * leftx) + (uint32_t)(lefty * lefty);
-    uint32_t stickDeadzoneActual = configStickDeadzone * DEADZONE_STEP;
-    if (magnitude_sq > (uint32_t)(stickDeadzoneActual * stickDeadzoneActual)) {
-        pad->stick_x = leftx / 0x100;
-        int stick_y = -lefty / 0x100;
-        pad->stick_y = stick_y == 128 ? 127 : stick_y;
-    }
-
-    magnitude_sq = (uint32_t)(rightx * rightx) + (uint32_t)(righty * righty);
-    stickDeadzoneActual = configStickDeadzone * DEADZONE_STEP;
-    if (magnitude_sq > (uint32_t)(stickDeadzoneActual * stickDeadzoneActual)) {
-        pad->ext_stick_x = rightx / 0x100;
-        int stick_y = -righty / 0x100;
-        pad->ext_stick_y = stick_y == 128 ? 127 : stick_y;
-    }
+		magnitude_sq = (uint32_t)(rightx * rightx) + (uint32_t)(righty * righty);
+		stickDeadzoneActual = configStickDeadzone * DEADZONE_STEP;
+		if (magnitude_sq > (uint32_t)(stickDeadzoneActual * stickDeadzoneActual)) {
+			pad->ext_stick_x = rightx / 0x100;
+			int stick_y = -righty / 0x100;
+			pad->ext_stick_y = stick_y == 128 ? 127 : stick_y;
+		}
+	}
 }
 
 static void controller_sdl_rumble_play(f32 strength, f32 length) {

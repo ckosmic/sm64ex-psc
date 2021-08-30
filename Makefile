@@ -143,7 +143,7 @@ endif
 endif
 endif
 
-TARGET := sm64.$(VERSION)
+TARGET := sm64
 VERSION_CFLAGS := -D$(VERSION_DEF) -D_LANGUAGE_C
 VERSION_ASFLAGS := --defsym $(VERSION_DEF)=1
 
@@ -277,6 +277,10 @@ EXE := $(BUILD_DIR)/$(TARGET).html
 		else # Linux builds/binary namer
 		ifeq ($(TARGET_RPI),1)
 			EXE := $(BUILD_DIR)/$(TARGET).arm
+			ifeq ($(TARGET_PSC),1)
+				TARGET := sm64
+				EXE := $(BUILD_DIR)/$(TARGET)
+			endif
 		else
 			EXE := $(BUILD_DIR)/$(TARGET)
 		endif
@@ -1009,6 +1013,12 @@ $(BUILD_DIR)/%.o: %.s
 
 $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS)
 	$(LD) -L $(BUILD_DIR) -o $@ $(O_FILES) $(SOUND_OBJ_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
+	
+ifeq ($(TARGET_PSC),1)
+	cp psc/launch.sh $(BUILD_DIR)/launch.sh
+	cp psc/launcher.cfg $(BUILD_DIR)/launcher.cfg
+	cp psc/sm64.png $(BUILD_DIR)/sm64.png
+endif
 
 .PHONY: all clean distclean default diff test load libultra res
 .PRECIOUS: $(BUILD_DIR)/bin/%.elf $(SOUND_BIN_DIR)/%.ctl $(SOUND_BIN_DIR)/%.tbl $(SOUND_SAMPLE_TABLES) $(SOUND_BIN_DIR)/%.s $(BUILD_DIR)/%

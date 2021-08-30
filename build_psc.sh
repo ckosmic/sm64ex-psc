@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOOLCHAIN="/home/ckosmic/psc/PSC-CrossCompile-Toolchain/armv8-sony-linux-gnueabihf"
+TOOLCHAIN="../PSC-CrossCompile-Toolchain/armv8-sony-linux-gnueabihf"
 export SYSROOT=${TOOLCHAIN}"/armv8-sony-linux-gnueabihf/sysroot"
 export BINPATH=${TOOLCHAIN}"/bin"
 

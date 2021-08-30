@@ -1,5 +1,5 @@
 # sm64ex
-Fork of [sm64-port/sm64-port](https://github.com/sm64-port/sm64-port) with additional features. 
+Fork of [sm64pc/sm64ex](https://github.com/sm64pc/sm64ex) ported to the PlayStation Classic. 
 
 Feel free to report bugs and contribute, but remember, there must be **no upload of any copyrighted asset**. 
 Run `./extract_assets.py --clean && make clean` or `make distclean` to remove ROM-originated content.
@@ -25,6 +25,28 @@ For example `--savepath .` will read saves from the current directory (which not
    `--savepath '!'` will read saves from the executable directory.
 
 ## Building
-For building instructions, please refer to the [wiki](https://github.com/sm64pc/sm64ex/wiki).
+Linux / WSL (Ubuntu)
+```
+su -
+apt-get update && \
+apt-get install -y python3 build-essential unzip
 
-**Make sure you have MXE first before attempting to compile for Windows on Linux and WSL. Follow the guide on the wiki.**
+wget https://github.com/autobleem/PSC-CrossCompile-Toolchain/archive/refs/heads/master.zip -O PSC-CrossCompile.zip && \
+unzip PSC-CrossCompile.zip && \
+rm PSC-CrossCompile.zip
+
+exit
+
+git clone https://github.com/ckosmic/sm64ex-psc.git
+
+cd sm64ex-psc
+
+# go and copy the baserom to c:\temp (create that directory in Windows Explorer)
+cp /mnt/c/temp/baserom.us.z64 ./
+
+sudo chmod 644 ./baserom.us.z64
+
+sudo bash build_psc.sh
+```
+
+**Make sure you have MXE first before attempting to compile for Windows on Linux and WSL.**

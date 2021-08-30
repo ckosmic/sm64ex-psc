@@ -27,26 +27,27 @@ For example `--savepath .` will read saves from the current directory (which not
 ## Building
 Linux / WSL (Ubuntu)
 ```
-su -
-apt-get update && \
-apt-get install -y python3 build-essential unzip
+sudo apt-get update && \
+sudo apt-get install -y python3 build-essential unzip
 
-wget https://github.com/autobleem/PSC-CrossCompile-Toolchain/archive/refs/heads/master.zip -O PSC-CrossCompile.zip && \
-unzip PSC-CrossCompile.zip && \
-rm PSC-CrossCompile.zip
-
-exit
+sudo wget https://github.com/autobleem/PSC-CrossCompile-Toolchain/archive/refs/heads/master.zip -O PSC-CrossCompile.zip && \
+sudo unzip PSC-CrossCompile.zip && \
+sudo rm PSC-CrossCompile.zip && \
+sudo mv PSC-CrossCompile-Toolchain-master PSC-CrossCompile-Toolchain
 
 git clone https://github.com/ckosmic/sm64ex-psc.git
 
+sudo chmod -R 775 sm64ex-pc
 cd sm64ex-psc
 
-# go and copy the baserom to c:\temp (create that directory in Windows Explorer)
+# Go and copy the baserom to C:\temp (create that directory in Windows Explorer if needed)
 cp /mnt/c/temp/baserom.us.z64 ./
 
 sudo chmod 644 ./baserom.us.z64
 
 sudo bash build_psc.sh
 ```
+
+After running these commands, navigate to `project_eris/etc/project_eris/SUP/launchers` on your PlayStation Classic's flash drive or through SFTP, and create a folder called `sm64`.  Copy every file from `build/us_pc` folder into this folder.
 
 **Make sure you have MXE first before attempting to compile for Windows on Linux and WSL.**

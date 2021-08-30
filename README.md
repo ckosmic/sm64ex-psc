@@ -48,6 +48,6 @@ sudo chmod 644 ./baserom.us.z64
 sudo bash build_psc.sh
 ```
 
-After running these commands, navigate to `project_eris/etc/project_eris/SUP/launchers` on your PlayStation Classic's flash drive or through SFTP, and create a folder called `sm64`.  Copy every file from `build/us_pc` folder into this folder.
+After running these commands, navigate to `project_eris/etc/project_eris/SUP/launchers` on your PlayStation Classic's flash drive or through SFTP, and create a folder called `sm64`.  Copy every file from `build/us_pc` into this folder.
 
 **Make sure you have MXE first before attempting to compile for Windows on Linux and WSL.**

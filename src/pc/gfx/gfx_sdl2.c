@@ -150,11 +150,7 @@ static inline void gfx_sdl_set_vsync(const bool enabled) {
     if (enabled) {
         // try to detect refresh rate
         SDL_GL_SetSwapInterval(1);
-        int vblanks = test_vsync();
-        if (vblanks & 1)
-            vblanks = 0; // not divisible by 60, fuck that
-        else
-            vblanks /= 2;
+        const int vblanks = gCLIOpts.SyncFrames ? (int)gCLIOpts.SyncFrames : test_vsync();
         if (vblanks) {
             printf("determined swap interval: %d\n", vblanks);
             SDL_GL_SetSwapInterval(vblanks);
@@ -237,7 +233,7 @@ static void gfx_sdl_init(const char *window_title) {
     gfx_sdl_set_fullscreen();
 
     perf_freq = SDL_GetPerformanceFrequency();
-    frame_time = perf_freq / (2 * FRAMERATE);
+    frame_time = perf_freq / FRAMERATE;
 
     for (size_t i = 0; i < sizeof(windows_scancode_table) / sizeof(SDL_Scancode); i++) {
         inverted_scancode_table[windows_scancode_table[i]] = i;
@@ -296,11 +292,9 @@ static void gfx_sdl_handle_events(void) {
 #ifndef TARGET_WEB
             // Scancodes are broken in Emscripten SDL2: https://bugzilla.libsdl.org/show_bug.cgi?id=3259
             case SDL_KEYDOWN:
-				//printf("key: %x", event.key.keysym.scancode);
                 gfx_sdl_onkeydown(event.key.keysym.scancode);
                 break;
             case SDL_KEYUP:
-				//printf("key: %x", event.key.keysym.scancode);
                 gfx_sdl_onkeyup(event.key.keysym.scancode);
                 break;
 #endif

@@ -37,10 +37,10 @@ sudo mv PSC-CrossCompile-Toolchain-master PSC-CrossCompile-Toolchain
 
 git clone https://github.com/ckosmic/sm64ex-psc.git
 
-sudo chmod -R 775 sm64ex-pc
+sudo chmod -R 775 sm64ex-psc
 cd sm64ex-psc
 
-# Go and copy the baserom to C:\temp (create that directory in Windows Explorer if needed)
+# If using WSL, go and copy the baserom to C:\temp (create that directory in Windows Explorer if needed)
 cp /mnt/c/temp/baserom.us.z64 ./
 
 sudo chmod 644 ./baserom.us.z64

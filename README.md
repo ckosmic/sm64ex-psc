@@ -21,6 +21,7 @@ sudo chmod -R 775 sm64ex-psc
 cd sm64ex-psc
 
 # If using WSL, go and copy the baserom to C:\temp (create that directory in Windows Explorer if needed)
+# If not, don't worry about this next command, just copy baserom.<version>.z64 to sm64ex-psc
 cp /mnt/c/temp/baserom.us.z64 ./
 
 sudo chmod 644 ./baserom.us.z64

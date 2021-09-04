@@ -293,6 +293,14 @@ static void gfx_sdl_handle_events(void) {
             // Scancodes are broken in Emscripten SDL2: https://bugzilla.libsdl.org/show_bug.cgi?id=3259
             case SDL_KEYDOWN:
                 gfx_sdl_onkeydown(event.key.keysym.scancode);
+				if (event.key.keysym.scancode == SDL_SCANCODE_SLEEP) {
+					// TODO (possibly): shutdown console
+				} else if(event.key.keysym.sym == SDLK_F4 || event.key.keysym.scancode == SDL_SCANCODE_AUDIOPLAY) {
+					SDL_Event quit;
+					quit.type = SDL_QUIT;
+					SDL_PushEvent(&quit);
+					return;
+				}
                 break;
             case SDL_KEYUP:
                 gfx_sdl_onkeyup(event.key.keysym.scancode);

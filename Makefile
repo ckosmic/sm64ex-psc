@@ -1018,7 +1018,6 @@ ifeq ($(TARGET_PSC),1)
 	cp psc/launch.sh $(BUILD_DIR)/launch.sh
 	cp psc/launcher.cfg $(BUILD_DIR)/launcher.cfg
 	cp psc/sm64.png $(BUILD_DIR)/sm64.png
-	cp psc/gamecontrollerdb.txt $(BUILD_DIR)/gamecontrollerdb.txt
 endif
 
 .PHONY: all clean distclean default diff test load libultra res

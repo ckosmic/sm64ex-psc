@@ -192,14 +192,13 @@ static void controller_sdl_read(OSContPad *pad) {
                     sdl_haptic = controller_sdl_init_haptics(i);
                     break;
                 }
-            }
-			 else {
+            }/* else {
 				sdl_jstck = SDL_JoystickOpen(i);
                 if (sdl_jstck != NULL) {
 					isPSCGamepad = (strstr(SDL_JoystickNameForIndex(i), "Sony Interactive Entertainment Controller") != NULL);
                     break;
                 }
-			}
+			}*/
         }
         if (sdl_cntrl == NULL && sdl_jstck == NULL) {
 			printf("Controller not found\n");
@@ -229,7 +228,7 @@ static void controller_sdl_read(OSContPad *pad) {
     }
 #endif
 
-	if(isPSCGamepad) {
+	/*if(isPSCGamepad) {
 		for (int i = 0; i < SDL_JoystickNumButtons(sdl_jstck); ++i) {
 			const bool state = SDL_JoystickGetButton(sdl_jstck, i);
 			if(state != 0) {
@@ -279,7 +278,7 @@ static void controller_sdl_read(OSContPad *pad) {
 			pad->stick_y = 127;
 		if(pad_x > 0x4000)
 			pad->stick_x = 127;
-	} else {
+	} else {*/
 		for (u32 i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
 			const bool new = SDL_GameControllerGetButton(sdl_cntrl, i);
 			update_button(i, new);
@@ -326,7 +325,7 @@ static void controller_sdl_read(OSContPad *pad) {
 			int stick_y = -righty / 0x100;
 			pad->ext_stick_y = stick_y == 128 ? 127 : stick_y;
 		}
-	}
+	//}
 }
 
 static void controller_sdl_rumble_play(f32 strength, f32 length) {
